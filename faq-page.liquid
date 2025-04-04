@@ -1,0 +1,497 @@
+<div class="faqs-search--container">
+  <div class="faqs-search--overlay">
+    <div class="faqs-search--title">
+      <h2>Search through our most frequently asked questions:</h2>
+    </div>
+    <div class="faqs-search--searchbar-container">
+      <form class="faqs-search--searchbar-form" onsubmit="return false;">
+        <input type="search" placeholder="Search" class="faqs-search--searchbar-content" id="faqs-search--query" autocomplete="off" aria-expanded="false" role="combobox">
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="faqs-match-count" style="display: none;">0 matches found</div>
+
+<div class="faqs-content-container">
+  {% assign faqs__data = page.metafields.custom.faqs.value | parse_json %}
+  {% if faqs__data.faqcontent %}
+    {% assign faqcontent = faqs__data.faqcontent %}
+  
+    {% comment %}FAQs page - categories section{% endcomment %}
+    <div class="faqs-categories">
+      <h2>FAQs</h2>
+      <div class="faq-categories-dropdown-container">
+        <button class="faq-categories-dropdown" aria-expanded="false">
+          <span>Select a category...</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+          </svg>
+        </button>
+        <div class="faq-categories-container">
+          {% for category in faqcontent %}
+            <button class="category-item" data-target="#{{ category.category | handleize }}">
+              <span>{{ category.category }}</span>
+            </button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  
+    {% comment %}FAQs page - questions{% endcomment %}
+    <div class="faq-content">
+      {% for faqcategory in faqcontent %}
+        <h2 id="{{ faqcategory.category | handleize }}">{{ faqcategory.category }}</h2>
+        <div>
+          {% assign faqs = faqcategory.faqs %}
+          {% for faq in faqs %}
+            <div class="faq-container">
+              <div 
+                role="button" 
+                class="faq-question"
+                tabindex="0"
+                aria-pressed="false"
+                onclick="toggleFaq(this)"
+                onkeydown="handleKeydown(event, this)"
+              >
+                <span>{{ faq.question }}</span>
+                <span class="arrow">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+                  </svg>
+                </span>
+              </div>
+              <div class="faq-answer">
+                {% for paragraph in faq.answer %}
+                  {% if faq.link %}
+                    <p>
+                      {{ paragraph | replace: "here", "<a href='" | append: faq.link | append: "' target='_blank' class='faq-link'>here</a>" }}
+                    </p>
+                  {% else %}
+                    <p>{{ paragraph }}</p>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+        {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <p>No FAQ data found</p>
+  {% endif %}
+          
+</div>
+
+<script>
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('faqs-search--query');
+    const faqItems = document.querySelectorAll('.faq-container');
+    const headings = document.querySelectorAll('.faq-content h2');
+    const categoriesContainer = document.querySelector('.faq-categories-container');
+    const toggleButton = document.querySelector('.faq-categories-dropdown');
+    const matchCountDisplay = document.getElementById('faqs-match-count'); // Match count element
+  
+    // Ensure all FAQs and headings are visible by default
+    faqItems.forEach(item => item.style.display = 'block');
+    headings.forEach(heading => heading.style.display = 'block');
+  
+    // Search functionality
+    searchInput.addEventListener('input', function () {
+      const searchTerm = this.value.toLowerCase().trim(); // Get the search term
+  
+      let matchCount = 0; // Count the number of matches found
+  
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question span').textContent.toLowerCase();
+        const answerParagraphs = Array.from(item.querySelectorAll('.faq-answer p'));
+  
+        // Check if the search term matches the question or any paragraph in the answer
+        const matchesQuestion = question.includes(searchTerm);
+        const matchesAnswer = answerParagraphs.some(paragraph => 
+          paragraph.textContent.toLowerCase().includes(searchTerm)
+        );
+  
+        // Show/hide FAQ item based on search term
+        if (matchesQuestion || matchesAnswer) {
+          item.style.display = 'block'; // Show matching FAQs
+          matchCount++; // Increment match count
+        } else {
+          item.style.display = 'none'; // Hide non-matching FAQs
+        }
+      });
+  
+      // Update match count display
+      if (searchTerm) {
+        matchCountDisplay.style.display = 'block'; // Show the match count
+        matchCountDisplay.textContent = `Matches found: ${matchCount}`;
+      } else {
+        matchCountDisplay.style.display = 'none'; // Hide the match count when search is cleared
+      }
+  
+      // Hide all headings and categories list during a search
+      if (searchTerm) {
+        headings.forEach(heading => heading.style.display = 'none'); // Hide all headings
+  
+        // Hide categories list and dropdown button
+        if (categoriesContainer) {
+          categoriesContainer.style.display = 'none';
+        }
+        if (toggleButton) {
+          toggleButton.setAttribute('aria-expanded', 'false');
+          toggleButton.style.display = 'none';
+        }
+      } else {
+        // Reset visibility when the search is cleared
+        headings.forEach(heading => heading.style.display = 'block'); // Show all headings
+        faqItems.forEach(item => item.style.display = 'block'); // Show all FAQs
+  
+        // Handle categories container visibility based on `aria-expanded` and device type
+        if (categoriesContainer && toggleButton) {
+          const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+  
+          if (window.innerWidth <= 749) {
+            // On mobile, show categories only if expanded
+            categoriesContainer.style.display = isExpanded ? 'flex' : 'none';
+            toggleButton.style.display = 'flex'; // Always show the dropdown button
+          } else {
+            // On desktop, categories container is always visible
+            categoriesContainer.style.display = 'flex';
+          }
+        }
+      }
+    });
+
+    //Category navigation
+    const buttons = document.querySelectorAll('.category-item');
+    const headerOffset = 100; // Adjust this value to match the height of your fixed header or overlap
+
+    buttons.forEach(button => {
+      button.addEventListener('click', function () {
+        const targetId = this.getAttribute('data-target').substring(1); // Remove `#` from data-target
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+          const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition - headerOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth',
+          });
+        }
+      });
+    });
+
+    // Dropdown mobile menu control
+    const categoryButtons = document.querySelectorAll('.category-item');
+  
+    if (toggleButton && categoriesContainer) {
+      // Toggle dropdown visibility
+      toggleButton.addEventListener('click', function () {
+        const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+        toggleButton.setAttribute('aria-expanded', !isExpanded);
+  
+        // Toggle the display property
+        categoriesContainer.style.display = isExpanded ? 'none' : 'flex';
+
+        const dropdownIcon = document.querySelector('.faq-categories-dropdown svg');
+        if (isExpanded) {
+          dropdownIcon.style.transform = "rotate(0)";
+        } else {
+          dropdownIcon.style.transform = "rotate(180deg)";
+        }
+      });
+  
+      // Close dropdown when a category is selected
+      categoryButtons.forEach(button => {
+        button.addEventListener('click', function () {
+          if (window.innerWidth <= 749) { // Apply only on mobile
+            toggleButton.setAttribute('aria-expanded', 'false');
+            categoriesContainer.style.display = 'none';
+          }
+  
+          // Optional: Scroll to target category
+          const targetId = this.getAttribute('data-target').substring(1); // Remove `#` from ID
+          const targetElement = document.getElementById(targetId);
+  
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
+    }
+  });
+
+  //Q&A button controls
+    function toggleFaq(element) {
+      console.log(element);
+      const answerElement = element.nextElementSibling; // Get the next sibling (faq-answer)
+      const isOpen = element.classList.contains('open'); // Check if the question is already open
+  
+      if (answerElement) {
+        // Toggle the 'visible' class on the answer element
+        const isVisible = answerElement.classList.toggle('visible');
+    
+        // Update the question element's state
+        element.setAttribute('aria-pressed', isVisible);
+    
+        // Toggle the 'open' class on the question element
+          if (isOpen) {
+            element.classList.remove('open'); // Remove open class if already open
+          } else {
+            element.classList.add('open'); // Add open class if not open
+          }
+      }
+    }
+
+    // Function to handle keyboard events
+    function handleKeydown(event, element) {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault(); // Prevent default scroll behavior for the space key
+        toggleFaq(element);
+      }
+    }
+
+</script>
+
+
+<style>
+  {% comment %}faqs search section{% endcomment %}
+  .faqs-search--container {
+    width: 100%;
+    background-image: url("https://cdn.shopify.com/s/files/1/0753/4185/7034/files/Untitled_design_9.png?v=1739833914");
+    background-position: center;
+    height: 316px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .faqs-search--overlay {
+    position: relative;
+    top: 50%
+    width: 50%;
+  }
+      
+  .faqs-search--searchbar-container {
+    align-content: center;
+    margin: 56px 16px 0;
+  }
+
+  .faqs-search--searchbar-form {
+    width: 100%;
+    display: flex;
+    border-radius: 8px;
+    background: #FFFFFF;
+    padding: 12px;
+    box-shadow: 0px 2px 4px rgba(22, 22, 22, 0.16);
+    border: 1px solid #DDDDDD;
+    border-color: #DDDDDD;
+  }
+
+  .faqs-search--searchbar-content {
+    width: 100%;
+    margin: 0 8px;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 20px;
+    appearance: none;
+    border: none;
+    outline: none;
+    padding: 0;
+    font-family: futura;
+  }
+
+  .faqs-search--search-icon {
+    height: 24px;
+    width: 24px;
+  }
+
+  *:focus-visible {
+    box-shadow: none;
+  }
+
+  #faqs-match-count {
+    font-size: 14px;
+    text-align: center;
+    padding-top: 16px;
+    color: #333; /* Optional: Adjust color */
+  }
+
+
+  {% comment %}faqs content section{% endcomment %}
+  .faqs-content-container {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 16px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .faqs-content-container {
+      flex-direction: row;
+      column-gap: 24px;
+      margin: 0 auto;
+      max-width: 1200px;
+    }
+  }
+
+  {% comment %}faqs categories section{% endcomment %}
+  .faqs-categories {
+    display: block;
+  }
+
+  @media screen and (min-width: 750px) {
+    .faq-categories-dropdown {
+      display: none !important;
+    }
+
+    .faqs-categories {
+      min-width: 200px;
+    }
+
+    .faqs-categories h2{
+      padding-left: 16px;
+    }
+  }
+
+  .faq-categories-dropdown {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    text-align: left;
+    justify-content: space-between;
+    padding: 12px;
+    border: 1px solid lightgray;
+    color: lightgray;
+    background-color: white;
+    border-radius: 8px;]
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .faq-categories-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    margin-top: 4px;
+    font-size: 14px;
+    max-height: 300px;
+    overflow-y: hidden;
+    border: 1px solid lightgray;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: lightgray 0px 2px 4px
+    z-index: 1;
+  }
+
+  @media screen and (max-width: 749px) {
+    .faq-categories-container {
+      display: none;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease-out;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 20;
+    }
+  
+    .faq-categories-dropdown[aria-expanded="true"] + .faq-categories-container {
+      display: flex;
+      max-height: 500px; /* Ensure a reasonable height for the expanded state */
+    }
+    .faq-categories-dropdown-container {
+      position: relative;
+    }
+  }
+
+
+  .category-item {
+    padding: 8px;
+    background-color: transparent;
+    cursor: pointer;
+    border: 0px solid white;
+    color: black;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: left;
+    border-radius: 8px;
+    font-family: futura;
+  }
+
+  @media screen and (min-width: 750px) {
+    .faq-categories-container {
+      border: none !important;
+    }
+  }
+
+  .faq-categories-container,
+  .faq-categories-dropdown {
+    transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+  }
+
+  {% comment %}FAQs content section{% endcomment %}
+  .faq-container {
+    border-top: 1px solid black;
+    padding: 10px 0;
+    cursor: pointer;
+  }
+
+  .faq-question {
+    background-color: white;
+    color: black;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 0px;
+    font-family: futura;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .faq-answer {
+    display: none; /* Initially hide the answer */
+    margin: 24px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: black;
+  }
+
+  .faq-answer.visible {
+    display: block; /* Show the answer when the 'visible' class is added */
+  }
+
+  .faq-content {
+    width: 100%;    
+  }
+
+  .faq-question .arrow {
+    transition: transform 0.3s ease; /* Smooth rotation */
+  }
+  
+  .faq-question.open .arrow {
+    transform: rotate(180deg); /* Rotate 180 degrees when the question is open */
+  }
+
+  .category-item,
+  .faq-question {
+    position: relative;
+    z-index: 10; /* Ensure they are above any other overlapping elements */
+  }
+
+  .faq-link {
+    text-decoration: underline;
+    color: black;
+  }
+  
+</style>
