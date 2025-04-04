@@ -1,0 +1,70 @@
+{
+  "faqcontent": [
+    {
+      "category": "Orders",
+      "faqs": [
+        {
+          "question": "Where is my order?",
+          "answer": "You can track your order here",
+          "link": "https://jjourney.shop/pages/order-tracking"
+        },
+        {
+          "question": "Can I cancel or change my order once it'd placed?",
+          "answer": [
+            "At JJourney, we want to be sure you receive your order as soon as possible. Since we're committed to speed, we start processing your order right away, which means we can't always make changes like address updates, colour swaps, or cancellations. But don't worry, if something doesn't quite fit, you can return it within 30 days.",
+            "Need anything else? Feel free to reach out to us at help@jjourney.shop or chat with us. We're here to help!"
+          ]
+        },
+        {
+          "question": "My order was incorrect or arrived damaged. What should I do?",
+          "answer": "We apologise for any inconvenience caused. Please know that we're here to assist you every step of the way. To return the incorrect or damaged item, kindly visit our returns page by clicking here. If you have any questions or need further assistance, please don't hesitate to reach out to us at help@jjourney.shop. We're committed to ensuring your satisfaction and resolving any concerns you may have."
+        }
+      ]
+    },
+    {
+      "category": "Shipping",
+      "faqs": [
+        {
+          "question": "What are the shipping options?",
+          "answer": "We offer standard and express shipping."
+        },
+        {
+          "question": "Can I track my shipment?",
+          "answer": "Yes, tracking information will be emailed to you."
+        }
+      ]
+    },
+    {
+      "category": "Returns",
+      "faqs": [
+        {
+          "question": "What is your refund policy?",
+          "answer": "See our refund policy here",
+          "link": "https://jjourney.shop/policies/refund-policy"
+        },
+        {
+          "question": "How do I start the return process?",
+          "answer": "You can start the return process by visiting our returns page here. If you cannot find your order confirmation email, please contact us at help@jjourney.shop for more help.",
+          "link": "https://jjourney.shop/policies/returns"
+        },
+        {
+          "question": "When will I recieve my refund?",
+          "answer": "We issue refunds to your original method of payment, as soon as we receive and approve your returned item. Once delivered, this process takes between 5-7 business days on our end."
+        }
+      ]
+    },
+    {
+      "category": "Contact Us",
+      "faqs": [
+        {
+          "question": "What are JJourney's office hours and conact information?",
+          "answer": [
+            "Monday-Friday: 9am-5pm",
+            "email: help@jjourney.shop",
+            "Hours may vary depending on holidays and other factors"
+          ]
+        }
+      ]
+    }
+  ]
+}
